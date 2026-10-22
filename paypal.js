@@ -15,7 +15,7 @@ async function act(id,action,btn){btn.disabled=true;btn.textContent='…';const 
 $('seed').onclick=async()=>{$('ppmsg').textContent='Creating sandbox invoices…';const j=await (await fetch('/api/seed',{method:'POST'})).json();await load();$('ppmsg').textContent=j.created?`Created ${j.created} draft invoices in PayPal sandbox.`:(j.note||j.error||'Nothing created.')};
 $('refresh').onclick=load;$('useinv').onchange=()=>{window.runForecast();render()};
 $('memobtn').onclick=async()=>{$('memo').textContent='Thinking like a CFO…';const st=window.rpState();
- const j=await (await fetch('/api/memo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({workspace:st.cur,floor:st.ws[st.cur].floor,forecast:window.lastSeries(),invoices:INV})})).json();
+ const j=await (await fetch('/api/memo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({workspace:st.cur,opening:st.ws[st.cur].open,floor:st.ws[st.cur].floor,forecast:window.lastSeries(),invoices:INV})})).json();
  $('aitag').textContent=j.ai?'AI: '+j.model:'deterministic fallback';$('memo').textContent=j.memo+'\n\nCHASE ORDER\n'+(j.ranked||[]).map((x,i)=>`${i+1}. ${x.customer} — $${x.amount.toLocaleString()} — ${x.action}${x.reason?' — '+x.reason:''}`).join('\n')};
 const _run=window.runForecast;window.runForecast=()=>{_run();if(INV.length)render()};document.getElementById('run').onclick=window.runForecast;
 load();})();
