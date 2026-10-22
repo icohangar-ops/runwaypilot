@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RunwayPilot — 13-week cash forecasts for SMBs & fractional CFOs</title>
+<title>RunwayPilot — cash forecasts + PayPal receivables + AI CFO memo</title>
 <style>
 body{margin:0;font-family:system-ui,sans-serif;background:#0d111c;color:#e6edf3}header{display:flex;justify-content:space-between;align-items:center;padding:16px 32px;background:#111827}
 h1{margin:0;font-size:22px;color:#6ee6a0}main{display:grid;grid-template-columns:380px 1fr;gap:24px;padding:24px 32px}
@@ -9,6 +9,8 @@ input,select{background:#0b0f18;color:#fff;border:1px solid #2a3550;padding:6px;
 table{width:100%;border-collapse:collapse;font-size:13px}td,th{padding:5px;border-bottom:1px solid #222c40;text-align:right}th:first-child,td:first-child{text-align:left}
 .plans{display:flex;gap:12px}.plan{flex:1;background:#0b0f18;border-radius:10px;padding:12px;font-size:13px}.plan.cur{outline:2px solid #6ee6a0}
 #alerts li{margin:4px 0}svg{background:#0b0f18;border-radius:10px}
+.pp{background:#0070ba;color:#fff}.tag{font-size:11px;padding:2px 6px;border-radius:6px;background:#2a3550}.urgent{outline:2px solid #ff7b72}
+#memo{white-space:pre-wrap;background:#0b0f18;border-radius:10px;padding:12px;font-size:14px;line-height:1.45;min-height:40px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 </style></head><body>
 <header><h1>✈ RunwayPilot</h1><div>Workspace: <select id="ws"></select> <button id="newws">+ Client</button> Plan: <b id="planlbl"></b></div></header>
 <main><section>
@@ -22,5 +24,9 @@ Cost cut % <input id="cut" type="number" value="0" style="width:60px"></p><butto
 <div class="kpis"><div class="kpi">Runway<b id="runway"></b></div><div class="kpi">Lowest balance<b id="low"></b></div><div class="kpi">Week 13 cash<b id="end"></b></div></div>
 <div class="card" style="margin-top:16px"><svg id="chart" width="100%" height="220" viewBox="0 0 800 220"></svg></div>
 <div class="card" style="margin-top:16px"><h3>CFO actions</h3><ul id="alerts"></ul></div>
+<div class="card" style="margin-top:16px"><div class="row"><h3 style="margin:0;flex:1">PayPal receivables <span id="ppsrc" class="tag"></span></h3>
+<label><input type="checkbox" id="useinv" checked> Include in forecast</label><button id="seed" class="pp">Seed demo invoices</button><button id="refresh" class="pp">Refresh</button></div>
+<p id="ppmsg" style="font-size:13px;color:#9fb0c8"></p><table id="invtbl"></table></div>
+<div class="card" style="margin-top:16px"><div class="row"><h3 style="margin:0;flex:1">AI weekly CFO memo <span id="aitag" class="tag"></span></h3><button id="memobtn">Write memo + chase plan</button></div><div id="memo" style="margin-top:10px">Click to generate.</div></div>
 <div class="card" style="margin-top:16px"><table id="tbl"></table></div></section></main>
-<script src="engine.js"></script><script src="app.js"></script></body></html>
+<script src="engine.js"></script><script src="app.js"></script><script src="paypal.js"></script></body></html>

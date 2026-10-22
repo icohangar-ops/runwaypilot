@@ -18,7 +18,7 @@ const save=()=>localStorage.setItem(KEY,JSON.stringify(st)),usd=c=>'$'+Math.roun
 function load(){const w=st.ws[st.cur];$('csv').value=w.csv;$('open').value=w.open;$('floor').value=w.floor;$('ws').innerHTML=Object.keys(st.ws).map(k=>`<option ${k==st.cur?'selected':''}>${k}</option>`).join('');$('planlbl').textContent=st.plan;
  document.querySelectorAll('.plan').forEach(p=>p.classList.toggle('cur',p.dataset.p==st.plan));run()}
 function run(){const w=st.ws[st.cur];w.csv=$('csv').value;w.open=+$('open').value;w.floor=+$('floor').value;save();
- const gated=st.plan==='Free';const s=forecast(parseCSV(w.csv),w.open*100,gated?{}:{delay:+$('delay').value,cut:+$('cut').value});const a=analyze(s,w.floor*100);
+ const gated=st.plan==='Free';const s=forecast(parseCSV(w.csv).concat(window.invoiceRows?window.invoiceRows():[]),w.open*100,gated?{}:{delay:+$('delay').value,cut:+$('cut').value});const a=analyze(s,w.floor*100);
  $('runway').textContent=a.runway+' wks';$('runway').className=a.runway<13?'bad':'ok';$('low').textContent=usd(a.low.bal)+' (wk '+a.low.week+')';$('end').textContent=usd(s[12].bal);
  $('alerts').innerHTML=a.acts.map(x=>`<li>${x}</li>`).join('')+(gated?'<li><i>Scenarios & email alerts are Pro features.</i></li>':'');
  $('tbl').innerHTML='<tr><th>Week</th><th>In</th><th>Out</th><th>Balance</th><th>Memo</th></tr>'+s.map(r=>`<tr><td>${r.week}</td><td>${usd(r.in)}</td><td>${usd(r.out)}</td><td class="${r.bal<w.floor*100?'bad':''}">${usd(r.bal)}</td><td>${r.memo}</td></tr>`).join('');
@@ -28,4 +28,5 @@ $('run').onclick=run;$('ws').onchange=e=>{st.cur=e.target.value;save();load()};
 $('newws').onclick=()=>{if(st.plan!=='Firm'&&Object.keys(st.ws).length>=1){alert('Multiple client workspaces need the Firm plan.');return}const n=prompt('Client name');if(n){st.ws[n]={csv:SAMPLE,open:50000,floor:20000};st.cur=n;save();load()}};
 document.querySelectorAll('.plan').forEach(p=>p.onclick=()=>{st.plan=p.dataset.p;save();load()});
 const q=new URLSearchParams(location.search);if(q.get('plan')){st.plan=q.get('plan');if(q.get('delay'))setTimeout(()=>{$('delay').value=q.get('delay');$('cut').value=q.get('cut')||0;run()},0)}
+window.runForecast=run;window.lastSeries=()=>forecast(parseCSV(st.ws[st.cur].csv).concat(window.invoiceRows?window.invoiceRows():[]),st.ws[st.cur].open*100,st.plan==='Free'?{}:{delay:+$('delay').value,cut:+$('cut').value});window.rpState=()=>st;
 load();
