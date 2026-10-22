@@ -18,13 +18,15 @@ module.exports = async (req, res) => {
   const floorC = (body.floor || 0) * 100; const breach = fc.find((w) => w.bal < floorC);
   const ranked = invs.map((i) => ({ ...i, priority: score(i, breach?.week), action: i.status === 'DRAFT' ? 'send' : 'remind' })).sort((a, b) => b.priority - a.priority);
   if (!process.env.OPENAI_API_KEY) return res.status(200).json({ ai: false, memo: fallback(body, ranked, breach), ranked });
-  const facts = { today: new Date().toISOString().slice(0, 10), workspace: body.workspace, opening_cash_usd: body.opening ?? null, floor_usd: body.floor, breach_week: breach?.week || null,
+  const low = fc.reduce((a, w) => (!a || w.bal < a.bal ? w : a), null);
+  const summary = fc.length ? { week1_end_balance_usd: fc[0].bal / 100, lowest_week: low.week, lowest_balance_usd: low.bal / 100, breach_week: breach?.week || null, shortfall_at_breach_usd: breach ? (floorC - breach.bal) / 100 : 0, week13_balance_usd: fc[fc.length - 1].bal / 100, open_receivables_usd: invs.reduce((a, i) => a + (+i.amount || 0), 0) } : {};
+  const facts = { summary, today: new Date().toISOString().slice(0, 10), workspace: body.workspace, opening_cash_usd: body.opening ?? null, floor_usd: body.floor, breach_week: breach?.week || null,
     weeks: fc.map((w) => ({ week: w.week, inflow_usd: w.in / 100, outflow_usd: w.out / 100, balance_usd: w.bal / 100 })),
     invoices: ranked.map(({ id, customer, amount, status, due_date, priority, action }) => ({ id, customer, amount, status, due_date, priority, action, days_until_due: Math.round((new Date(due_date) - Date.now()) / 864e5), is_overdue: new Date(due_date) < Date.now() })) };
   try {
     const r = await fetch('https://api.openai.com/v1/chat/completions', { method: 'POST', headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: process.env.OPENAI_MODEL || 'gpt-4o-mini', temperature: 0.2, max_tokens: 700, response_format: { type: 'json_object' },
-        messages: [{ role: 'system', content: 'You are a fractional CFO writing a weekly cash memo for a small-business owner. Use only the numbers provided; never invent figures. Only call an invoice overdue if is_overdue is true; otherwise say when it is due. Weekly balances are end-of-week projections, not current cash; current cash is opening_cash_usd. DRAFT invoices have not been sent yet. Return JSON: {"memo": string (<=180 words, plain text, sections: Position, Risk, Actions this week), "chase_order": [invoice ids in the order to chase], "reasons": {invoice_id: one short sentence}}.' },
+        messages: [{ role: 'system', content: 'You are a fractional CFO writing a weekly cash memo for a small-business owner. Use only the numbers provided; never invent figures. Only call an invoice overdue if is_overdue is true; otherwise say when it is due. Quote figures from summary first. Weekly balances are end-of-week projections, not current cash; current cash is opening_cash_usd. DRAFT invoices have not been sent yet. Return JSON: {"memo": string (<=180 words, plain text, sections: Position, Risk, Actions this week), "chase_order": [invoice ids in the order to chase], "reasons": {invoice_id: one short sentence}}.' },
           { role: 'user', content: JSON.stringify(facts) }] }) });
     if (!r.ok) throw new Error(`OpenAI ${r.status}`);
     const j = JSON.parse((await r.json()).choices[0].message.content);
