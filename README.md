@@ -1,5 +1,7 @@
 # RunwayPilot — 13-week cash forecasting SaaS for SMBs and fractional CFOs
 
+
+**Live demo:** https://runwaypilot-phi.vercel.app
 Paste or import weekly cash data, set an opening balance and a cash floor, and RunwayPilot shows runway, the lowest balance, a chart, and concrete CFO actions (defer, draw credit, negotiate the biggest pre-breach outflow). Pro adds scenarios (receivables delay, cost cuts); Firm adds multi-client workspaces for fractional-CFO firms.
 
 ## Architecture
